@@ -103,6 +103,9 @@ public class ht2 : PhysicsGame
         Level.Background.Image = MaanKuva;
         Level.Background.ScaleToLevelFull();
 
+        //pistelaskuri peliin
+        PisteLaskuri();
+
         //näppäimet
 
         Keyboard.Listen(Key.Down, ButtonState.Down, LiikutaPelaajaa, null, new Vector(0, -100), pelaaja);
@@ -127,7 +130,7 @@ public class ht2 : PhysicsGame
         
 
     }
-    
+    //alkuvalikko
     void Valikko()
     {
 
@@ -145,14 +148,14 @@ public class ht2 : PhysicsGame
         Mouse.ListenOn(aloita, MouseButton.Left, ButtonState.Pressed, AloitaPeli, null);
             
     }
-
+    //lopeusnäyttö
     void Lopeta()
     {
 
         ClearAll();
         List<Label> painikkeet = new List<Label>();
 
-        Label pisteet = new Label("piseetTahan");
+        Label pisteet = new Label("pisteet: " + pisteLaskuri.Value);
         Label lopeta = new Label("Loppu");
         lopeta.Position = new Vector(0, 40);
         painikkeet.Add(lopeta);
@@ -230,6 +233,7 @@ public class ht2 : PhysicsGame
         pisteNaytto.Y = Screen.Top - 100;
         pisteNaytto.TextColor = Color.Black;
         pisteNaytto.Color = Color.White;
+        pisteNaytto.Title = "pisteet";
         pisteNaytto.BindTo(pisteLaskuri);
         Add(pisteNaytto);
     }
@@ -293,6 +297,7 @@ public class ht2 : PhysicsGame
         ammus.Destroy();
         if(kohde.Tag.Equals("zombi"))
         {
+            pisteLaskuri.Value += 100;
             kohde.Destroy();
             vihollisteMaara--;
         }
@@ -335,7 +340,7 @@ public class ht2 : PhysicsGame
         
     }
    
-    void Hyokkaa(PhysicsObject pelaaja, PhysicsObject zombi)
+    void Hyokkaa(Pelaaja pelaaja, PhysicsObject zombi)
     {
             kierros = 0;
             pelaaja.Destroy();
