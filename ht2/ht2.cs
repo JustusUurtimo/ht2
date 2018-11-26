@@ -12,7 +12,8 @@ public class ht2 : PhysicsGame
     AssaultRifle rynkky;
     Pelaaja pelaaja;
     LaserGun laser;
-    
+    IntMeter pisteLaskuri;
+
     Boolean vihollisiaJaljella = false;
     int vihollisteMaara;
     int pelaajanTerveys = 10;
@@ -68,8 +69,7 @@ public class ht2 : PhysicsGame
 
 
         ClearAll();
-        Level.Background.Image = MaanKuva;
-        Level.Background.ScaleToLevelFull();
+        
         
 
         ruudut.SetTileMethod('#', LuoSeina);
@@ -100,8 +100,9 @@ public class ht2 : PhysicsGame
         Add(pelaaja);
         pelaaja.Add(rynkky);
 
-        
-        
+        Level.Background.Image = MaanKuva;
+        Level.Background.ScaleToLevelFull();
+
         //näppäimet
 
         Keyboard.Listen(Key.Down, ButtonState.Down, LiikutaPelaajaa, null, new Vector(0, -100), pelaaja);
@@ -120,10 +121,9 @@ public class ht2 : PhysicsGame
         PhoneBackButton.Listen(ConfirmExit, "Lopeta peli");
         Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
 
-        if(vihollisiaJaljella == false)
-        {
+        
             Kierros();
-        }
+        
         
 
     }
@@ -145,6 +145,26 @@ public class ht2 : PhysicsGame
         Mouse.ListenOn(aloita, MouseButton.Left, ButtonState.Pressed, AloitaPeli, null);
             
     }
+
+    void Lopeta()
+    {
+
+        ClearAll();
+        List<Label> painikkeet = new List<Label>();
+
+        Label pisteet = new Label("piseetTahan");
+        Label lopeta = new Label("Loppu");
+        lopeta.Position = new Vector(0, 40);
+        painikkeet.Add(lopeta);
+        painikkeet.Add(pisteet);
+        lopeta.BorderColor = Color.Black;
+        foreach (Label painike in painikkeet)
+        {
+            Add(painike);
+        }
+        Mouse.ListenOn(lopeta, MouseButton.Left, ButtonState.Pressed, AloitaPeli, null);
+
+    }
     //kierrosten ja vihujen luonti
     void Kierros()
     {
@@ -153,7 +173,7 @@ public class ht2 : PhysicsGame
         //viholliset seuraajiksi
 
         //vihujenluonti
-        for (int z = 0; z < 2 * kierros; z++)
+        for (int z = 0; z < vihollisteMaara; z++)
         {
             FollowerBrain VihunAivot = new FollowerBrain(pelaaja)
             {
@@ -200,7 +220,19 @@ public class ht2 : PhysicsGame
         seina.CollisionIgnoreGroup = 1;
         Add(seina);
     }
+    //luodaan pistelaskuri
+    void PisteLaskuri()
+    {
+        pisteLaskuri = new IntMeter(0);
 
+        Label pisteNaytto = new Label();
+        pisteNaytto.X = Screen.Left + 100;
+        pisteNaytto.Y = Screen.Top - 100;
+        pisteNaytto.TextColor = Color.Black;
+        pisteNaytto.Color = Color.White;
+        pisteNaytto.BindTo(pisteLaskuri);
+        Add(pisteNaytto);
+    }
 
     class Pelaaja : PhysicsObject
     {
@@ -262,9 +294,10 @@ public class ht2 : PhysicsGame
         if(kohde.Tag.Equals("zombi"))
         {
             kohde.Destroy();
+            vihollisteMaara--;
         }
         
-        vihollisteMaara--;
+        
 
         //miten vain että zombeihin osuu
         if(vihollisteMaara == 0)
@@ -306,7 +339,7 @@ public class ht2 : PhysicsGame
     {
             kierros = 0;
             pelaaja.Destroy();
-            Valikko();
+            Lopeta();
         
     }
     void AnnaLaser(Pelaaja pelaaja)
