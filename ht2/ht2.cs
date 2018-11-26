@@ -10,15 +10,12 @@ public class ht2 : PhysicsGame
     Image MaanKuva = LoadImage("maa");
     Image seinanKuva = LoadImage("seina");
     AssaultRifle rynkky;
-    Pelaaja pelaaja;
+    public Pelaaja pelaaja1;
     LaserGun laser;
     IntMeter pisteLaskuri;
-
+    IntMeter hpLaskuri;
     List<Zombie> vihut;
-
-    Boolean vihollisiaJaljella = false;
     int vihollisteMaara;
-    int pelaajanTerveys = 20;
     int kierros = 0;
     private static String[] mappi =
     {
@@ -42,7 +39,7 @@ public class ht2 : PhysicsGame
     public override void Begin()
     {
 
-       IsFullScreen = true;
+       //IsFullScreen = true;
 
         
 
@@ -83,6 +80,8 @@ public class ht2 : PhysicsGame
         PisteLaskuri();
         pisteLaskuri.Value = 10;
 
+        HpLaskuri();
+        hpLaskuri.Value = pelaaja1.Elamat;
         //rynkky
         rynkky = new AssaultRifle(30, 10);
         rynkky.Ammo.Value = pisteLaskuri.Value;
@@ -98,14 +97,14 @@ public class ht2 : PhysicsGame
 
 
         //pelaaja
-        pelaaja = new Pelaaja(10, 30);
-        pelaaja.CanRotate = false;
-        pelaaja.Elamat = 10;
+        pelaaja1 = new Pelaaja(10, 30);
+        pelaaja1.CanRotate = false;
+        pelaaja1.Elamat = 10;
         
-        pelaaja.Image = HahmonKuva;
-        pelaaja.Tag = "Pelaaja";
-        Add(pelaaja);
-        pelaaja.Add(rynkky);
+        pelaaja1.Image = HahmonKuva;
+        pelaaja1.Tag = "Pelaaja";
+        Add(pelaaja1);
+        pelaaja1.Add(rynkky);
 
         Level.Background.Image = MaanKuva;
         Level.Background.ScaleToLevelFull();
@@ -114,25 +113,25 @@ public class ht2 : PhysicsGame
 
         //näppäimet
 
-        Keyboard.Listen(Key.Down, ButtonState.Down, LiikutaPelaajaa, null, new Vector(0, -100), pelaaja);
+        Keyboard.Listen(Key.Down, ButtonState.Down, LiikutaPelaajaa, null, new Vector(0, -100), pelaaja1);
         Keyboard.Listen(Key.Down, ButtonState.Released, Pysayta, null, new Vector(0, -100));
         Keyboard.Listen(Key.Down, ButtonState.Pressed, KaannaAse, "Käännetään asetta pelaajanmukana", Angle.FromDegrees(-90), rynkky);
 
-        Keyboard.Listen(Key.Up, ButtonState.Down, LiikutaPelaajaa, null, new Vector(0, 100), pelaaja);
+        Keyboard.Listen(Key.Up, ButtonState.Down, LiikutaPelaajaa, null, new Vector(0, 100), pelaaja1);
         Keyboard.Listen(Key.Up, ButtonState.Released, Pysayta, null, new Vector(0, 100));
         Keyboard.Listen(Key.Up, ButtonState.Pressed, KaannaAse, "Käännetään asetta pelaajanmukana", Angle.FromDegrees(90), rynkky);
 
-        Keyboard.Listen(Key.Left, ButtonState.Down, LiikutaPelaajaa, null, new Vector(-100, 0), pelaaja);
+        Keyboard.Listen(Key.Left, ButtonState.Down, LiikutaPelaajaa, null, new Vector(-100, 0), pelaaja1);
         Keyboard.Listen(Key.Left, ButtonState.Released, Pysayta, null, new Vector(-100, 0));
         Keyboard.Listen(Key.Left, ButtonState.Pressed, KaannaAse, "Käännetään asetta pelaajanmukana", Angle.FromDegrees(180), rynkky);
 
-        Keyboard.Listen(Key.Right, ButtonState.Down, LiikutaPelaajaa, null, new Vector(100, 0), pelaaja);
+        Keyboard.Listen(Key.Right, ButtonState.Down, LiikutaPelaajaa, null, new Vector(100, 0), pelaaja1);
         Keyboard.Listen(Key.Right, ButtonState.Released, Pysayta, null, new Vector(100, 0));
         Keyboard.Listen(Key.Right, ButtonState.Pressed, KaannaAse, "Käännetään asetta pelaajanmukana", Angle.FromDegrees(0), rynkky);
 
-        Keyboard.Listen(Key.Space, ButtonState.Down, Ammu, "Ammu", rynkky, pelaaja);
+        Keyboard.Listen(Key.Space, ButtonState.Down, Ammu, "Ammu", rynkky, pelaaja1);
 
-        Keyboard.Listen(Key.Q, ButtonState.Pressed, AnnaLaser, "Annetaan laserGun", pelaaja);
+        Keyboard.Listen(Key.Q, ButtonState.Pressed, AnnaLaser, "Annetaan laserGun", pelaaja1);
 
         PhoneBackButton.Listen(ConfirmExit, "Lopeta peli");
         Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
@@ -184,6 +183,9 @@ public class ht2 : PhysicsGame
     //kierrosten ja vihujen luonti
     void Kierros()
     {
+        //lita vihuista
+        vihut = new List<Zombie>();
+
         kierros++;
         vihollisteMaara = 2 * kierros;
         
@@ -192,23 +194,26 @@ public class ht2 : PhysicsGame
         for (int z = 0; z < vihollisteMaara; z++)
         {
             //viholliset seuraajiksi
-            FollowerBrain VihunAivot = new FollowerBrain(pelaaja)
+            Zombie zombi = new Zombie(10, 30);
+
+            FollowerBrain VihunAivot = new FollowerBrain(pelaaja1)
             {
-                Speed = 10,
+                Speed = zombi.nopeus,
                 DistanceFar = 900,
                 DistanceClose = 10
             };
 
-            Zombie zombi = new Zombie(10, 30);
+            
             zombi.Image = ZombienKuva;
             zombi.Position = zombi.Respaus;
             zombi.Tag = "zombi";
+            
             zombi.Brain = VihunAivot;
             zombi.CanRotate = false;
 
-           AddCollisionHandler(pelaaja, zombi, Hyokkaa);
+           AddCollisionHandler(pelaaja1, zombi, Hyokkaa);
 
-
+            vihut.Add(zombi);
             Add(zombi);
 
         }
@@ -243,7 +248,21 @@ public class ht2 : PhysicsGame
         Add(pisteNaytto);
     }
 
-    class Pelaaja : PhysicsObject
+    void HpLaskuri()
+    {
+        hpLaskuri = new IntMeter(0);
+
+        Label pisteNaytto = new Label();
+        pisteNaytto.X = Screen.Left - 100;
+        pisteNaytto.Y = Screen.Top + 100;
+        pisteNaytto.TextColor = Color.Black;
+        pisteNaytto.Color = Color.White;
+        pisteNaytto.Title = "Elamat";
+        pisteNaytto.BindTo(hpLaskuri);
+        Add(pisteNaytto);
+    }
+
+    public class Pelaaja : PhysicsObject
     {
         public int Elamat { get; set; }
         public Vector Respaus { get; set; }
@@ -254,23 +273,25 @@ public class ht2 : PhysicsGame
             : base(leveys, korkeus)
         {
             
-            Elamat = 10;
+            Elamat = 100;
             Pisteet = 0;
             Respaus = Vector.Zero;
-            Color = Color.Beige;
+            
         }
     }
 
-    class Zombie : PhysicsObject
+    public class Zombie : PhysicsObject
     {
         public int Elamat { get; set; }
         public Vector Respaus { get; set; }
         public Color Vari { get; set; }
+        public int nopeus { get; set; }
 
         public Zombie(double leveys, double korkeus)
             : base(leveys, korkeus)
         {
             Elamat = 50;
+            nopeus = 30;
             Respaus = RandomGen.NextVector(10, 10, 400, 400);
             Vari = Color.Red;
         }
@@ -303,15 +324,66 @@ public class ht2 : PhysicsGame
         pisteLaskuri.Value = rynkky.Ammo.Value;
         if (kohde.Tag.Equals("zombi"))
         {
+            Random ohi = new Random();
+            int dodged = ohi.Next(1, 10);
+            if(dodged > 6)
+            {
+                kohde.Tag = "dodged";
+            } else
+            {
+                kohde.Tag = "osui";
+                
+                //pisteLaskuri.Value += 10;
+                rynkky.Ammo.Value += 10;
 
-            //pisteLaskuri.Value += 10;
-            rynkky.Ammo.Value += 10;
+                kohde.Destroy();
+                vihollisteMaara--;
+            }
+            Zombie jotain = vihut[0];
+            for (int z = 0; z < vihut.Capacity; z++)
+            {
+                if (vihut[z].Tag.Equals("dodged"))
+                {
+                    jotain = vihut[z];
+                    //jotain.Tag = "zombi";
+                    break;
+                }
+                if (vihut[z].Tag.Equals("osui"))
+                {
+                    jotain = vihut[z];
+                    //jotain.Tag = "zombi";
+                    break;
+                }
+
+
+            }
             
-            kohde.Destroy();
-            vihollisteMaara--;
+            if (jotain.Tag.Equals("dodged"))
+            {
+
+            jotain.nopeus += 30;
+            FollowerBrain VihunAivot = new FollowerBrain(pelaaja1)
+            {
+               Speed = jotain.nopeus,
+               DistanceFar = 900,
+               DistanceClose = 10
+            };
+                jotain.Brain = VihunAivot;
+
+            }
+            if (jotain.Tag.Equals("osui"))
+            {
+                jotain.Elamat -= 25;
+                if(jotain.Elamat <= 0)
+                {
+                    jotain.Destroy();
+                }
+                
+            }
+            jotain.Tag = "zombi";
         }
         //pisteLaskuri.Value--;
-        rynkky.Ammo.Value--;
+        
         
 
         //miten vain että zombeihin osuu
@@ -331,17 +403,14 @@ public class ht2 : PhysicsGame
     }
     void Pysayta(Vector suunta)
     {
-        pelaaja.StopAxial(suunta);
+        pelaaja1.StopAxial(suunta);
     }
+
     void Ammu(AssaultRifle rifle, Pelaaja pelaaja)
     {
         PhysicsObject ammus = rifle.Shoot();
-        
-
-        if (ammus != null)
-        {
+        rynkky.Ammo.Value--;
            
-        }
     }
 
     void KaannaAse(Angle aste, AssaultRifle rynkky)
@@ -353,10 +422,11 @@ public class ht2 : PhysicsGame
     void Hyokkaa(PhysicsObject pelaaja, PhysicsObject zombi)
     {
             kierros = 0;
-            pelaajanTerveys -= 10;
-            if(pelaajanTerveys == 0)
+            pelaaja1.Elamat -= 25;
+            hpLaskuri.Value -= 25;
+            if(pelaaja1.Elamat == 0)
             {
-            this.pelaaja.Destroy();
+            this.pelaaja1.Destroy();
             Lopeta();
             }
             
