@@ -39,7 +39,7 @@ public class ht2 : PhysicsGame
     public override void Begin()
     {
 
-       // IsFullScreen = true;
+       IsFullScreen = true;
 
         
 
@@ -259,7 +259,11 @@ public class ht2 : PhysicsGame
 
         
         ammus.Destroy();
-        kohde.Destroy();
+        if(kohde.Tag.Equals("zombi"))
+        {
+            kohde.Destroy();
+        }
+        
         vihollisteMaara--;
 
         //miten vain että zombeihin osuu
@@ -280,7 +284,7 @@ public class ht2 : PhysicsGame
     void Ammu(AssaultRifle rifle, Pelaaja pelaaja)
     {
         PhysicsObject ammus = rifle.Shoot();
-        ammus.Tag = "ammus";
+        //ammus.Tag = "ammus";
         
         //AddCollisionHandler(ammus, "zombi", Osuma);
         //tämä kaataa pelin
